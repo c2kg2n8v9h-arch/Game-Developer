@@ -26,3 +26,27 @@ class CitationResponse(BaseModel):
 class AnswerResponse(BaseModel):
     answer: str
     citations: list[CitationResponse]
+
+
+class WorldCreateRequest(BaseModel):
+    description: str = Field(min_length=1)
+    display_name: str | None = None
+    source_image_url: str | None = None
+    metadata: dict[str, str] = Field(default_factory=dict)
+
+
+class WorldJobResponse(BaseModel):
+    id: str
+    status: str
+    provider: str
+    error: str | None = None
+
+
+class WorldAssetResponse(BaseModel):
+    kind: str
+    url: str
+
+
+class WorldResponse(WorldJobResponse):
+    caption: str | None = None
+    assets: list[WorldAssetResponse]

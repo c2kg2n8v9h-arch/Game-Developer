@@ -25,4 +25,10 @@ python -m rag_service
 
 Open `http://127.0.0.1:8000/docs`. Ingest with `POST /v1/documents`, then ask with `POST /v1/query`. Run tests with `pytest`.
 
+## World models
+
+`POST /v1/worlds` retrieves relevant indexed context and submits a grounded prompt to a world-model provider. `GET /v1/worlds/{id}` returns job state and generated asset references. The default `local` provider needs no credentials; configure `world_labs` or `nvidia_cosmos` through `.env` for production inference.
+
+Generated manifests are written under `data/worlds/` only when `persist_manifest=true` is passed to the GET endpoint. Large generated assets belong in object storage, not Git.
+
 Production providers implement the protocols in `domain/ports.py` and are selected in `api/dependencies.py`.

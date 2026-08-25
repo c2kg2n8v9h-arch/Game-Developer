@@ -15,6 +15,9 @@ htmlcov/
 build/
 dist/
 
+# Generated world manifests and downloaded assets
+data/worlds/
+
 # Local configuration and secrets
 .env
 

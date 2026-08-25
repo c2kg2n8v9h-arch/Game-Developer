@@ -5,6 +5,8 @@
 - **Infrastructure** implements provider contracts for local or hosted systems.
 - **API** validates HTTP data and maps it to application DTOs.
 - **Composition root** is the only place selecting concrete providers.
+- **World orchestration** enriches generation prompts with retrieved project knowledge.
+- **Workers** poll long-running generation jobs and persist provider-neutral manifests.
 
 ## Production checklist
 
