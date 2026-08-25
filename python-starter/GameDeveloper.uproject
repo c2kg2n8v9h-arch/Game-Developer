@@ -1,0 +1,19 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "",
+  "Category": "Games",
+  "Description": "Game Developer project with RAG-grounded world generation.",
+  "Modules": [
+    {
+      "Name": "GameDeveloper",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "RagWorldConnector",
+      "Enabled": true
+    }
+  ]
+}

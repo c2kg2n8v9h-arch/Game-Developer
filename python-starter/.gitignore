@@ -26,3 +26,11 @@ data/worlds/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Unreal Engine generated files
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+*.sln
