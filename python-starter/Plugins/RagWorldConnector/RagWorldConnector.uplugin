@@ -1,0 +1,19 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1.0",
+  "FriendlyName": "RAG World Connector",
+  "Description": "Connects Unreal Engine to the enterprise RAG and world-generation service.",
+  "Category": "AI",
+  "CreatedBy": "Game Developer",
+  "CanContainContent": false,
+  "IsBetaVersion": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "RagWorldConnector",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
