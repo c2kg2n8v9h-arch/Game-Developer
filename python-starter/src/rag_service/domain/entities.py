@@ -13,3 +13,18 @@ class Chunk:
 class SearchResult:
     chunk: Chunk
     score: float
+
+
+@dataclass(frozen=True)
+class NpcAction:
+    kind: str
+    target: str | None = None
+    value: str | None = None
+
+
+@dataclass(frozen=True)
+class NpcReply:
+    speech: str
+    emotion: str = "neutral"
+    intent: str = "conversation"
+    actions: tuple[NpcAction, ...] = ()

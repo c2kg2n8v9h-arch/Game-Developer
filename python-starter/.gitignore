@@ -17,6 +17,8 @@ dist/
 
 # Generated world manifests and downloaded assets
 data/worlds/
+data/rag.sqlite3
+data/hf-cache/
 
 # Local configuration and secrets
 .env

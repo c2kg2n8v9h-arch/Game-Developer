@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from typing import Protocol
-from .entities import Chunk, SearchResult
+from .entities import Chunk, NpcReply, SearchResult
 
 
 class Embedder(Protocol):
@@ -14,3 +14,13 @@ class VectorStore(Protocol):
 
 class Generator(Protocol):
     def generate(self, question: str, context: Sequence[Chunk]) -> str: ...
+
+
+class NpcGenerator(Protocol):
+    def reply(
+        self,
+        character: str,
+        player_message: str,
+        state: dict[str, str],
+        context: Sequence[Chunk],
+    ) -> NpcReply: ...

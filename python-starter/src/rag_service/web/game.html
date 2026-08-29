@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Lorebound — Hugging Face Adventure</title>
+  <style>
+    :root { color-scheme: dark; --ink:#f4ead2; --muted:#b8ad98; --gold:#efb366; --panel:#171b24e8; --edge:#ffffff1c; }
+    * { box-sizing:border-box }
+    body { margin:0; min-height:100vh; color:var(--ink); font-family:Georgia,serif; background:
+      radial-gradient(circle at 20% 10%,#43564b 0,transparent 35%),
+      radial-gradient(circle at 90% 75%,#5b3b42 0,transparent 35%),#0c1018; overflow-x:hidden }
+    body:before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.16; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") }
+    main { width:min(920px,calc(100% - 32px)); margin:auto; padding:48px 0 }
+    header { text-align:center; margin-bottom:28px }
+    .eyebrow { color:var(--gold); text-transform:uppercase; letter-spacing:.2em; font:600 12px system-ui }
+    h1 { font-size:clamp(42px,8vw,78px); line-height:.9; margin:12px 0; font-weight:500; text-shadow:0 8px 30px #000 }
+    header p { color:var(--muted); max-width:600px; margin:18px auto; font-size:17px }
+    .panel { border:1px solid var(--edge); background:var(--panel); backdrop-filter:blur(18px); box-shadow:0 24px 80px #0008; border-radius:24px; padding:24px }
+    .setup { display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end }
+    label { display:block; color:var(--muted); font:600 11px system-ui; text-transform:uppercase; letter-spacing:.12em }
+    input { width:100%; margin-top:7px; border:1px solid var(--edge); background:#0b0f16; color:var(--ink); border-radius:12px; padding:13px; outline:none }
+    input:focus { border-color:var(--gold) }
+    button { border:0; border-radius:12px; padding:14px 18px; cursor:pointer; font:700 13px system-ui; color:#21170d; background:var(--gold); transition:.2s transform,.2s filter }
+    button:hover { transform:translateY(-2px); filter:brightness(1.08) }
+    button:disabled { opacity:.5; cursor:wait; transform:none }
+    #status { min-height:24px; color:var(--muted); font:13px system-ui; margin-top:14px }
+    #adventure { display:none; margin-top:20px }
+    #scene { min-height:190px; font-size:19px; line-height:1.7; white-space:pre-wrap }
+    .choices { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:18px }
+    .choice { text-align:left; min-height:74px; color:var(--ink); background:#ffffff0b; border:1px solid var(--edge) }
+    .choice span { display:block; color:var(--gold); font-size:11px; text-transform:uppercase; letter-spacing:.12em; margin-bottom:5px }
+    .meter { height:3px; background:#ffffff12; border-radius:4px; overflow:hidden; margin-bottom:22px }
+    .meter div { height:100%; width:0; background:linear-gradient(90deg,var(--gold),#e06e68); transition:width .5s }
+    footer { text-align:center; color:#847d70; font:12px system-ui; margin-top:18px }
+    @media(max-width:720px){ .setup{grid-template-columns:1fr 1fr}.setup>label:first-child{grid-column:1/-1}.setup button{width:100%}.choices{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<main>
+  <header><div class="eyebrow">A dataset-powered micro adventure</div><h1>Lorebound</h1><p>Stream stories from Hugging Face, then wander through a world whose memories come from the dataset.</p></header>
+  <section class="panel">
+    <div class="setup">
+      <label>Dataset ID<input id="dataset" value="roneneldan/TinyStories"></label>
+      <label>Text column<input id="column" value="text"></label>
+      <label>Rows<input id="rows" type="number" min="1" max="100" value="12"></label>
+      <button id="awaken">Awaken world</button>
+    </div>
+    <div id="status">Choose a dataset or use the TinyStories default.</div>
+  </section>
+  <section id="adventure" class="panel">
+    <div class="meter"><div id="progress"></div></div>
+    <div id="scene"></div>
+    <div class="choices">
+      <button class="choice" data-action="Follow the oldest path and describe what waits there"><span>Explore</span>Follow the oldest path</button>
+      <button class="choice" data-action="Speak to a mysterious stranger and reveal their secret"><span>Encounter</span>Speak to the stranger</button>
+      <button class="choice" data-action="Search for a hidden treasure and explain its history"><span>Discover</span>Search for hidden treasure</button>
+    </div>
+  </section>
+  <footer>Powered by Hugging Face Datasets · Local RAG memory · No full dataset download</footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let turns = 0;
+async function apiError(response){
+  const problem=await response.json().catch(()=>null);
+  return problem?.detail || `Request failed (${response.status})`;
+}
+async function awaken(){
+  const button=$("awaken"), dataset=$("dataset").value.trim(), column=$("column").value.trim();
+  button.disabled=true; $("status").textContent="Streaming fragments from Hugging Face…";
+  try {
+    const response=await fetch("/v1/datasets/hugging-face",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dataset_id:dataset,split:"train",text_columns:column?[column]:[],max_rows:Number($("rows").value)})});
+    if(!response.ok) throw new Error(await apiError(response));
+    const data=await response.json();
+    $("status").textContent=`World awakened from ${data.rows_indexed} story fragments (${data.chunks_indexed} memories).`;
+    $("adventure").style.display="block"; turns=0; $("progress").style.width="8%";
+    $("scene").textContent="At dusk, you arrive where the map ends. Three possibilities shimmer ahead. The world is listening—choose your first move.";
+  } catch(error){ $("status").textContent=`Could not awaken the world: ${error.message}`; }
+  finally { button.disabled=false; }
+}
+async function choose(event){
+  const button=event.currentTarget, action=button.dataset.action;
+  document.querySelectorAll(".choice").forEach(x=>x.disabled=true); $("scene").textContent="The world searches its memories…";
+  try {
+    const response=await fetch("/v1/ai/npc/turn",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({character:"The Cartographer",player_message:action,state:{turn:String(turns),location:"The Map's End"},top_k:2})});
+    if(!response.ok) throw new Error(await apiError(response));
+    const data=await response.json(); turns++;
+    $("scene").textContent=data.speech+`\n\nThe Cartographer seems ${data.emotion}. What will you do next?`;
+    $("progress").style.width=Math.min(100,8+turns*18)+"%";
+  } catch(error){ $("scene").textContent="The memory fog thickens. Try another path.\n\n"+error.message; }
+  finally { document.querySelectorAll(".choice").forEach(x=>x.disabled=false); }
+}
+$("awaken").addEventListener("click",awaken);
+document.querySelectorAll(".choice").forEach(x=>x.addEventListener("click",choose));
+</script>
+</body>
+</html>
